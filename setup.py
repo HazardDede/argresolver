@@ -10,12 +10,12 @@ def readme():
 
 
 setup(
-    name='resolver',
+    name='argresolver',
     version=VERSION,
     description="Resolve missing arguments at runtime",
     long_description=readme(),
     long_description_content_type='text/markdown',
-    url='https://github.com/HazardDede/resolver',
+    url='https://github.com/HazardDede/argresolver',
     author='d.muth',
     author_email='nicetry@bitch.com',
     license='MIT',
@@ -41,18 +41,13 @@ setup(
     ],
     keywords='push pull data pipeline',
     project_urls={
-        'Documentation': 'https://github.com/HazardDede/pnp/blob/master/README.md',
-        'Source': 'https://github.com/HazardDede/pnp/',
-        'Tracker': 'https://github.com/HazardDede/pnp/issues',
+        'Documentation': 'https://github.com/HazardDede/argresolver/blob/master/README.md',
+        'Source': 'https://github.com/HazardDede/argresolver/',
+        'Tracker': 'https://github.com/HazardDede/argresolver/issues',
     },
     packages=find_packages(exclude=[]),
     install_requires=[
     ],
     python_requires='>=3.4',
-    include_package_data=True,
-    entry_points={
-        'console_scripts': [
-            'pnp=pnp.runner:main',
-        ],
-    },
+    include_package_data=True
 )

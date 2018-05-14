@@ -1,5 +1,5 @@
-from resolver import Environment
-from resolver.utils import modified_environ  # We use it to alter the environment variables
+from argresolver import Environment
+from argresolver.utils import modified_environ  # We use it to alter the environment variables
 
 class Connection:
     @Environment(prefix='DB')

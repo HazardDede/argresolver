@@ -1,6 +1,6 @@
-from .context import resolver
+from .context import argresolver
 
-from resolver import utils
+from argresolver import utils
 
 class A:
     def doit(self):

@@ -1,7 +1,7 @@
-.PHONY: clean-pyc clean-build clean lint test doctest rollback
+.PHONY: clean-pyc clean-build clean lint test doctest rollback version
 
 VERSION=0.1.0
-SOURCE_PATH=./resolver
+SOURCE_PATH=./argresolver
 TEST_PATH=./tests
 
 help:

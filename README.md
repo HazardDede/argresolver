@@ -1,4 +1,4 @@
-# ArgResolver v0.1.0
+# ArgResolver v0.2.0
 
 Resolver is a simple decorator for resolving (missing) arguments at runtime.
 It performs various tasks from looking up arguments from the environment variable scope to simple service dependency injection.

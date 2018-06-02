@@ -128,25 +128,25 @@ def auto_str(__repr__=False):
     Example:
         >>> @auto_str(__repr__=True)
         ... class Demo(object):
-        ...    def __init__(self, i=0, s="a", l=None, d=None):
+        ...    def __init__(self, i=0, s="a", l=None, t=None):
         ...        self.i = i
         ...        self.s = s
         ...        self.l = l
-        ...        self.d = d
-        >>> dut = Demo(10, 'abc', [1, 2, 3], {'a': 1, 'b': 2})
+        ...        self.t = t
+        >>> dut = Demo(10, 'abc', [1, 2, 3], (1,2,3))
         >>> print(dut.__str__())
-        Demo(i=10, s='abc', l=[1, 2, 3], d={'a': 1, 'b': 2})
+        Demo(i=10, l=[1, 2, 3], s='abc', t=(1, 2, 3))
         >>> print(eval(dut.__repr__()).__str__())
-        Demo(i=10, s='abc', l=[1, 2, 3], d={'a': 1, 'b': 2})
+        Demo(i=10, l=[1, 2, 3], s='abc', t=(1, 2, 3))
         >>> print(dut.__repr__())
-        Demo(i=10, s='abc', l=[1, 2, 3], d={'a': 1, 'b': 2})
+        Demo(i=10, l=[1, 2, 3], s='abc', t=(1, 2, 3))
     """
     def decorator(cls):
         def __str__(self):
             items = ["{name}={value}".format(
                 name=name,
-                value=value.__repr__()
-            ) for name, value in vars(self).items()
+                value=vars(self)[name].__repr__()
+            ) for name in [key for key in sorted(vars(self))]
                 if name not in get_field_mro(self.__class__, '__auto_str_ignore__')]
             return "{clazz}({items})".format(
                 clazz=str(type(self).__name__),

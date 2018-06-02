@@ -14,7 +14,7 @@ class Resolver(utils.Loggable):
 
         >>> resolver = Resolver()
         >>> str(resolver)
-        'Resolver(ignore=set(), default_override=False)'
+        'Resolver(default_override=False, ignore=set())'
     """
     def __init__(self, ignore=None, default_override=False, **kwargs):
         if ignore is not None and not isinstance(ignore, str) and not hasattr(ignore, '__iter__'):

@@ -1,5 +1,7 @@
 # ArgResolver v0.2.0
 
+[![Build Status](https://travis-ci.org/HazardDede/argresolver.svg?branch=master)](https://travis-ci.org/HazardDede/argresolver)
+
 Resolver is a simple decorator for resolving (missing) arguments at runtime.
 It performs various tasks from looking up arguments from the environment variable scope to simple service dependency injection.
 
@@ -26,8 +28,6 @@ More examples will follow. Stay tuned...
     with modified_environ(DB_USERNAME='admin', DB_PASSWORD='secret'):
         conn = Connection()
     print(str(conn))  # Connection(username=admin, password=secret, database=default)
-
-
 
 
 Examples will follow...

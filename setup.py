@@ -44,7 +44,7 @@ setup(
         'Source': 'https://github.com/HazardDede/argresolver/',
         'Tracker': 'https://github.com/HazardDede/argresolver/issues',
     },
-    packages=find_packages(exclude=[]),
+    packages=find_packages(exclude=["tests", "examples"]),
     install_requires=[
     ],
     python_requires='>=3.4',

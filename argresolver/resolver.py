@@ -30,7 +30,7 @@ class Resolver(utils.Loggable):
 
     @abstractmethod
     def _resolve_arg(self, name, value, defaults, cls):
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def _call_resolve_arg(self, name, value, defaults, cls):
         # We won't tamper with self and cls
@@ -102,17 +102,20 @@ class ConstResolver(Resolver):
         ...         return a, b
 
         >>> dut = C()
-        >>> dut.f1('passed')  # Replaces any missing arguments by the given constant value. Defaults and passed args are
-        ... # untouched
+        >>> dut.f1('passed')  # Replaces any missing args by the given constant. Defaults and passed args are untouched
         ('passed', 'resolved', 'default')
+
         >>> dut.f1(b='passed', c='passed')  # Keyword args work too
         ('resolved', 'passed', 'passed')
+
         >>> dut.f2(b='passed')  # Will work
         ('resolved', 'passed')
+
         >>> dut.f2()  # Will not work. b cannot be resolved because it is ignored
         Traceback (most recent call last):
         ...
         TypeError: f2() missing 1 required positional argument: 'b'
+
         >>> dut.f3()  # Argument b will be resolved instead of set to default because of override.
         ('resolved', 'resolved')
     """
@@ -141,8 +144,10 @@ class MapResolver(Resolver):
         >>> dut = C()
         >>> dut.f1()  # Resolution via map
         ('Service1', None)
+
         >>> dut.f2()  # Resolution of service2 cause of default override
         ('Service1', 'Service2')
+
         >>> dut.f3()  # Resolution of service3 will fail
         Traceback (most recent call last):
         ...
@@ -179,8 +184,10 @@ class ChainResolver(Resolver):
         >>> dut = C()
         >>> dut.f1(c='passed')  # Argument resolution: 'a' by MapResolver, Argument 'b' by ConstResolver
         ('map', 'const', 'passed')
+
         >>> dut.f2()
         ('map', 'map2', 'default')
+
         >>> dut.f3()
         Traceback (most recent call last):
         ...
@@ -218,12 +225,15 @@ class EnvironmentResolver(Resolver):
         >>> with utils.modified_environ(PASSWORD='secret'):
         ...     dut.login()  # Resolution of argument 'password' via environment 'PASSWORD', default of 'username'
         ('user', 'secret')
+
         >>> with utils.modified_environ(PASSWORD='secret', USERNAME='admin'):
         ...     dut.login()  # No override of argument username's default
         ('user', 'secret')
+
         >>> with utils.modified_environ(PRE_USERNAME='admin'):
         ...     dut.login2()  # Resolution via prefix: Lookup is environment variable PRE_USERNAME; with override
         ('admin', 'broken')
+
         >>> with utils.modified_environ(PRE_USERNAME='admin', PRE_PASSWORD='secret'):
         ...     dut.login2()  # Override the default value of both arguments
         ('admin', 'secret')

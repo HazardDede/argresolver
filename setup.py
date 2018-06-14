@@ -17,7 +17,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/HazardDede/argresolver',
     author='d.muth',
-    author_email='nicetry@bitch.com',
+    author_email='d.muth@gmx.net',
     license='MIT',
     classifiers=[
         # How mature is this project? Common values are
@@ -28,7 +28,6 @@ setup(
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
-        'Topic :: Data Engineering :: Data Pipeline',
 
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',

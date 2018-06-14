@@ -52,10 +52,11 @@ version:
 		@echo $(VERSION)
 
 sdist:
+		rm dist/*
 		python setup.py sdist
 
 release-test: lint test sdist
 		twine upload dist/* -r testpypi
 
-release: release-test
+release: lint test sdist
 		twine upload dist/* -r pypi

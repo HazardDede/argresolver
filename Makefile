@@ -50,3 +50,12 @@ rollback:
 
 version:
 		@echo $(VERSION)
+
+sdist:
+		python setup.py sdist
+
+release-test: lint test sdist
+		twine upload dist/* -r testpypi
+
+release: release-test
+		twine upload dist/* -r pypi

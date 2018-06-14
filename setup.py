@@ -38,7 +38,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    keywords='push pull data pipeline',
+    keywords='args arguments injection resolve resolver',
     project_urls={
         'Documentation': 'https://github.com/HazardDede/argresolver/blob/master/README.md',
         'Source': 'https://github.com/HazardDede/argresolver/',

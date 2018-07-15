@@ -6,6 +6,7 @@ from . import utils
 
 Missing = object()
 
+
 @utils.auto_str(__repr__=True)
 class Resolver(utils.Loggable):
     """

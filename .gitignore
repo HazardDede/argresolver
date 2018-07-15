@@ -1,5 +1,7 @@
 # IDE's
 .vscode/
+*.iml
+.idea/
 
 .DS_Store
 

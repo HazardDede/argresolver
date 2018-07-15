@@ -1,0 +1,25 @@
+# ArgResolver v0.2.3
+
+[![Build Status](https://travis-ci.org/HazardDede/argresolver.svg?branch=master)](https://travis-ci.org/HazardDede/argresolver)
+
+Resolver is a simple decorator for resolving (missing) arguments at runtime.
+It performs various tasks from looking up arguments from the environment variable scope to simple service dependency injection.
+
+!TOC
+
+## Resolver
+
+### Environment
+
+!INCLUDECODE "./examples/environment/connect.py" (python)
+
+!INCLUDECODE "./examples/environment/connection.py" (python)
+
+### Map
+
+!INCLUDECODE "./examples/map/override_default.py" (python)
+
+### Chain
+
+!INCLUDECODE "./examples/chain/fallback.py" (python)
+

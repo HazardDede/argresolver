@@ -1,4 +1,4 @@
-# ArgResolver v0.3.0
+# ArgResolver v0.3.1
 
 [![Build Status](https://travis-ci.org/HazardDede/argresolver.svg?branch=master)](https://travis-ci.org/HazardDede/argresolver)
 

@@ -59,7 +59,7 @@ class Resolver(utils.Loggable):
     def resolve(wrapped_fun, resolve_fun):
         def wrapper(*args, **kwargs):
             # Argument name-value pairs
-            sig = inspect.getargspec(wrapped_fun)
+            sig = inspect.getfullargspec(wrapped_fun)
             defaults = {}
             if sig.defaults is not None:
                 defaults = {k: v for k, v in list(zip(sig.args[-len(sig.defaults):], sig.defaults))}

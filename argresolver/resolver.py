@@ -64,8 +64,7 @@ class Resolver(utils.Loggable):
             if sig.defaults is not None:
                 defaults = {k: v for k, v in list(zip(sig.args[-len(sig.defaults):], sig.defaults))}
             named_args = list(zip(sig.args, args))
-            unset = (set(sig.args) -
-                     set([name for name, _ in named_args])
+            unset = (set(sig.args) - set([name for name, _ in named_args])
                      .union(set([name for name, _ in kwargs.items()])))
             for u in unset:
                 kwargs[u] = Missing
@@ -256,6 +255,6 @@ class EnvironmentResolver(Resolver):
         newval = os.environ.get(lookup, Missing)
         hasdefault = defaults.get(name, Missing) is not Missing
         if newval is Missing and not hasdefault:
-            self.logger.warn("Cannot resolve argument '{}' of {}. Try to set environment variable '{}'".format(
+            self.logger.warning("Cannot resolve argument '{}' of {}. Try to set environment variable '{}'".format(
                 name, cls, lookup))
         return newval

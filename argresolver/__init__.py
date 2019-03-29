@@ -1,3 +1,5 @@
+"""Package argresolver."""
+
 from . import resolver
 
 Resolver = resolver.Resolver

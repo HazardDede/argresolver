@@ -1,14 +1,17 @@
+"""Core classes."""
+
 import inspect
+import logging
 import os
 from abc import abstractmethod
 
 from . import utils
 
-Missing = object()
+_MISSING = object()
 
 
 @utils.auto_str(__repr__=True)
-class Resolver(utils.Loggable):
+class Resolver:
     """
     Examples:
 
@@ -16,14 +19,27 @@ class Resolver(utils.Loggable):
         >>> str(resolver)
         'Resolver(default_override=False, ignore=set())'
     """
-    def __init__(self, ignore=None, default_override=False, **kwargs):
+    def __init__(self, ignore=None, default_override=False):
         if ignore is not None and not isinstance(ignore, str) and not hasattr(ignore, '__iter__'):
-            raise TypeError("Argument 'ignore' is expected to be None, str or iterable, but is {}".format(type(ignore)))
+            raise TypeError(
+                "Argument 'ignore' is expected to be None, str or iterable, but is {}".format(
+                    type(ignore)
+                )
+            )
         if not isinstance(default_override, bool):
-            raise TypeError("Argument 'default_override' is expected to be a boolean, but is {}".format(
-                type(default_override)))
+            raise TypeError(
+                "Argument 'default_override' is expected to be a boolean, but is {}".format(
+                    type(default_override)
+                )
+            )
         self.ignore = set(utils.make_list(ignore or []))
         self.default_override = default_override
+
+    @property
+    def logger(self):
+        """Return the instance logger."""
+        component = "{}.{}".format(type(self).__module__, type(self).__name__)
+        return logging.getLogger(component)
 
     def _make_ignore(self, cls):
         return self.ignore.union(utils.get_field_mro(cls, '__resolver_ignore__'))
@@ -37,17 +53,17 @@ class Resolver(utils.Loggable):
         if name in {'self', 'cls'}:
             return value
         # We won't change any passed arguments
-        if value is not Missing:
+        if value is not _MISSING:
             return value
         # We return the default if any
         if not self.default_override and name in defaults:
             return defaults[name]
         # We will ignore any argument in the ignore list
         if name in self._make_ignore(cls):
-            return Missing
+            return _MISSING
         # ... Otherwise we will try to resolve the argument dynamically
         newval = self._resolve_arg(name, value, defaults, cls)
-        if newval is Missing and name in defaults:
+        if newval is _MISSING and name in defaults:
             return defaults[name]
         return newval
 
@@ -57,30 +73,32 @@ class Resolver(utils.Loggable):
 
     @staticmethod
     def resolve(wrapped_fun, resolve_fun):
-        def wrapper(*args, **kwargs):
+        """Resolves any missing arguments at runtime."""
+
+        def _wrapper(*args, **kwargs):
             # Argument name-value pairs
             sig = inspect.getfullargspec(wrapped_fun)
             defaults = {}
             if sig.defaults is not None:
                 defaults = {k: v for k, v in list(zip(sig.args[-len(sig.defaults):], sig.defaults))}
             named_args = list(zip(sig.args, args))
-            unset = (set(sig.args) - set([name for name, _ in named_args])
-                     .union(set([name for name, _ in kwargs.items()])))
-            for u in unset:
-                kwargs[u] = Missing
+            unset = (set(sig.args) - {name for name, _ in named_args}
+                     .union({name for name, _ in kwargs.items()}))
+            for _unset in unset:
+                kwargs[_unset] = _MISSING
 
             mclazz = utils.get_class_that_defined_method(wrapped_fun)
 
-            def call_resolve(name, value):
+            def _call_resolve(name, value):
                 return resolve_fun(name, value, defaults, mclazz)
 
             # new args + kwargs to inject to wrapped function
-            new_kwargs = {name: call_resolve(name, value) for name, value in named_args}
-            new_kwargs.update({name: call_resolve(name, value) for name, value in kwargs.items()})
+            new_kwargs = {name: _call_resolve(name, value) for name, value in named_args}
+            new_kwargs.update({name: _call_resolve(name, value) for name, value in kwargs.items()})
 
             # call with new kwargs (ignore missing ones)
-            return wrapped_fun(**{k: v for k, v in new_kwargs.items() if v is not Missing})
-        return wrapper
+            return wrapped_fun(**{k: v for k, v in new_kwargs.items() if v is not _MISSING})
+        return _wrapper
 
 
 class ConstResolver(Resolver):
@@ -101,7 +119,7 @@ class ConstResolver(Resolver):
         ...         return a, b
 
         >>> dut = C()
-        >>> dut.f1('passed')  # Replaces any missing args by the given constant. Defaults and passed args are untouched
+        >>> dut.f1('passed')  # Replaces any missing args by the given constant.
         ('passed', 'resolved', 'default')
 
         >>> dut.f1(b='passed', c='passed')  # Keyword args work too
@@ -156,11 +174,13 @@ class MapResolver(Resolver):
     def __init__(self, mapping, **kwargs):
         super().__init__(**kwargs)
         if not isinstance(mapping, dict):
-            raise TypeError("Argument 'mapping' is expected to be a dictionary, but is {}".format(type(mapping)))
+            raise TypeError(
+                "Argument 'mapping' is expected to be a dictionary, but is {}".format(type(mapping))
+            )
         self.mapping = mapping
 
     def _resolve_arg(self, name, value, defaults, cls):
-        return self.mapping.get(name, Missing)
+        return self.mapping.get(name, _MISSING)
 
 
 class ChainResolver(Resolver):
@@ -181,7 +201,8 @@ class ChainResolver(Resolver):
         ...         return a, b, c
 
         >>> dut = C()
-        >>> dut.f1(c='passed')  # Argument resolution: 'a' by MapResolver, Argument 'b' by ConstResolver
+        >>> # Argument resolution: 'a' by MapResolver, Argument 'b' by ConstResolver
+        >>> dut.f1(c='passed')
         ('map', 'const', 'passed')
 
         >>> dut.f2()
@@ -195,17 +216,18 @@ class ChainResolver(Resolver):
     def __init__(self, *resolver, **kwargs):
         super().__init__(**kwargs)
         self.resolver = utils.make_list(resolver)
-        for r in self.resolver:
-            if not isinstance(r, Resolver):
-                raise ValueError("Item of argument 'resolver' is expected to be of type 'Resolver', but is {}".format(
-                    type(r)))
+        for _resolver in self.resolver:
+            if not isinstance(_resolver, Resolver):
+                raise TypeError(
+                    "Item of argument 'resolver' is expected to be of type 'Resolver', "
+                    "but is {}".format(type(_resolver)))
 
     def _resolve_arg(self, name, value, defaults, cls):
-        for r in self.resolver:
-            res = r._resolve_arg(name, value, defaults, cls)
-            if res is not Missing:
+        for _resolver in self.resolver:
+            res = _resolver._resolve_arg(name, value, defaults, cls)  # pylint: disable=protected-access
+            if res is not _MISSING:
                 return res
-        return Missing
+        return _MISSING
 
 
 class EnvironmentResolver(Resolver):
@@ -221,16 +243,18 @@ class EnvironmentResolver(Resolver):
         ...         return username, password
 
         >>> dut = C()
+        >>> # Resolution of argument 'password' via environment 'PASSWORD', default of 'username'
         >>> with utils.modified_environ(PASSWORD='secret'):
-        ...     dut.login()  # Resolution of argument 'password' via environment 'PASSWORD', default of 'username'
+        ...     dut.login()
         ('user', 'secret')
 
         >>> with utils.modified_environ(PASSWORD='secret', USERNAME='admin'):
         ...     dut.login()  # No override of argument username's default
         ('user', 'secret')
 
+        >>> # Resolution via prefix: Lookup is environment variable PRE_USERNAME; with override
         >>> with utils.modified_environ(PRE_USERNAME='admin'):
-        ...     dut.login2()  # Resolution via prefix: Lookup is environment variable PRE_USERNAME; with override
+        ...     dut.login2()
         ('admin', 'broken')
 
         >>> with utils.modified_environ(PRE_USERNAME='admin', PRE_PASSWORD='secret'):
@@ -241,20 +265,28 @@ class EnvironmentResolver(Resolver):
     def __init__(self, prefix=None, **kwargs):
         super().__init__(**kwargs)
         if prefix is not None and not isinstance(prefix, str):
-            raise TypeError("Argument 'prefix' is expected to be a str, but is {}".format(type(prefix)))
+            raise TypeError(
+                "Argument 'prefix' is expected to be a str, but is {}".format(type(prefix))
+            )
         self.prefix = prefix
 
     def _prefix(self, cls):
-        return self.prefix or getattr(cls, '__resolver_prefix__', None) or getattr(cls, '__prefix__', None)
+        return (
+            self.prefix
+            or getattr(cls, '__resolver_prefix__', None)
+            or getattr(cls, '__prefix__', None)
+        )
 
     def _resolve_arg(self, name, value, defaults, cls):
         lookup = name.upper()
         prefix = self._prefix(cls)
         if prefix is not None:
             lookup = prefix.upper() + '_' + lookup
-        newval = os.environ.get(lookup, Missing)
-        hasdefault = defaults.get(name, Missing) is not Missing
-        if newval is Missing and not hasdefault:
-            self.logger.warning("Cannot resolve argument '{}' of {}. Try to set environment variable '{}'".format(
-                name, cls, lookup))
+        newval = os.environ.get(lookup, _MISSING)
+        hasdefault = defaults.get(name, _MISSING) is not _MISSING
+        if newval is _MISSING and not hasdefault:
+            self.logger.warning(
+                "Cannot resolve argument '%s' of %s. Try to set environment variable '%s'",
+                name, cls, lookup
+            )
         return newval

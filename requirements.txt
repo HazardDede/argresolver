@@ -1,9 +1,11 @@
 -e .
 
 bumpversion
+coveralls
 flake8
 pytest
 pytest-cov
+pylint
 twine
 setuptools
 MarkdownPP==1.4

@@ -1,13 +1,14 @@
+"""Utility functions for the package argresolver."""
+
 import contextlib
 import inspect
-import logging
 import os
 
 
 def get_class_that_defined_method(fun):
     """
-    Tries to find the class that defined the specified method. Will not work for nested classes (locals).
-    TODO: Taken from where?
+    Tries to find the class that defined the specified method. Will not work for nested classes
+    (locals).
 
     Args:
         fun: Function / Method
@@ -29,10 +30,11 @@ def get_class_that_defined_method(fun):
 
 
 def get_field_mro(cls, field_name):
+    """Goes up the mro and looks for the specified field."""
     res = set()
     if hasattr(cls, '__mro__'):
-        for c in inspect.getmro(cls):
-            values_ = getattr(c, field_name, None)
+        for _class in inspect.getmro(cls):
+            values_ = getattr(_class, field_name, None)
             if values_ is not None:
                 res = res.union(set(make_list(values_)))
     return res
@@ -75,12 +77,15 @@ def make_list(item_or_items):
 @contextlib.contextmanager
 def modified_environ(*remove, **update):
     """
-    Temporarily updates the ``os.environ`` dictionary in-place and resets it to the original state when finished.
-    (https://stackoverflow.com/questions/2059482/python-temporarily-modify-the-current-processs-environment/34333710#34333710)
-    The ``os.environ`` dictionary is updated in-place so that the modification is sure to work in all situations.
+    Temporarily updates the `os.environ` dictionary in-place and resets it to the original state
+    when finished.
+    The `os.environ` dictionary is updated in-place so that the modification is sure to work in
+    all situations.
+
     Args:
         remove: Environment variables to remove.
         update: Dictionary of environment variables and values to add/update.
+
     Examples:
         >>> with modified_environ(Test='abc'):
         ...     import os
@@ -102,11 +107,11 @@ def modified_environ(*remove, **update):
 
     try:
         env.update(update)
-        [env.pop(k, None) for k in remove]
+        [env.pop(k, None) for k in remove]  # pylint: disable=expression-not-assigned
         yield
     finally:
         env.update(update_after)
-        [env.pop(k) for k in remove_after]
+        [env.pop(k) for k in remove_after]  # pylint: disable=expression-not-assigned
 
 
 def auto_str(__repr__=False):
@@ -114,16 +119,17 @@ def auto_str(__repr__=False):
     Use this decorator to auto implement __str__() and optionally __repr__() methods on classes.
 
     Args:
-        __repr__ (bool): If set to true, the decorator will auto-implement the __repr__() method as well.
+        __repr__ (bool): If set to true, the decorator will auto-implement the __repr__() method as
+            well.
 
     Returns:
         callable: Decorating function.
 
     Note:
-        There are known issues with self referencing (self.s = self). Recursion will be identified by the python
-        interpreter and will do no harm, but it will actually not work.
-        A eval(class.__repr__()) will obviously not work, when there are attributes that are not part of the
-        __init__'s arguments.
+        There are known issues with self referencing (self.s = self). Recursion will be identified
+        by the python interpreter and will do no harm, but it will actually not work.
+        A eval(class.__repr__()) will obviously not work, when there are attributes that are not
+        part of the __init__'s arguments.
 
     Example:
         >>> @auto_str(__repr__=True)
@@ -141,13 +147,13 @@ def auto_str(__repr__=False):
         >>> print(dut.__repr__())
         Demo(i=10, l=[1, 2, 3], s='abc', t=(1, 2, 3))
     """
-    def decorator(cls):
+    def _decorator(cls):
         def __str__(self):
             items = ["{name}={value}".format(
                 name=name,
                 value=vars(self)[name].__repr__()
             ) for name in [key for key in sorted(vars(self))]
-                if name not in get_field_mro(self.__class__, '__auto_str_ignore__')]
+                if name not in get_field_mro(self.__class__, '__auto_str_ignore__')]  # pylint: disable=bad-continuation
             return "{clazz}({items})".format(
                 clazz=str(type(self).__name__),
                 items=', '.join(items)
@@ -158,13 +164,19 @@ def auto_str(__repr__=False):
 
         return cls
 
-    return decorator
+    return _decorator
 
 
 def auto_str_ignore(ignore_list):
     """
     Use this decorator to suppress any fields that should not be part of the dynamically created
     `__str__` or `__repr__` function of `auto_str`.
+
+    Args:
+        ignore_list: List or item of the fields to suppress by `auto_str`.
+
+    Returns:
+        Returns a decorator.
 
     Example:
 
@@ -179,34 +191,9 @@ def auto_str_ignore(ignore_list):
         >>> dut = Demo(10, 'abc', [1, 2, 3], {'a': 1, 'b': 2})
         >>> print(str(dut))
         Demo(i=10, s='abc')
-
-    Args:
-        ignore_list: List or item of the fields to suppress by `auto_str`.
-
-    Returns:
-        Returns a decorator.
     """
-    def decorator(cls):
+    def _decorator(cls):
         ignored = make_list(ignore_list)
         cls.__auto_str_ignore__ = ignored
         return cls
-    return decorator
-
-
-class Loggable(object):
-    """
-    Adds a logger property to the class to provide easy access to a configured logging instance to use.
-    Example:
-        >>> class NeedsLogger(Loggable):
-        ...     def do(self, message):
-        ...         self.logger.info(message)
-    """
-    @property
-    def logger(self):
-        """
-        Configures and returns a logger instance for further use.
-        Returns:
-            (logging.Logger)
-        """
-        component = "{}.{}".format(type(self).__module__, type(self).__name__)
-        return logging.getLogger(component)
+    return _decorator

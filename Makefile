@@ -46,7 +46,12 @@ docs: README.mdpp
 		markdown-pp README.mdpp -o README.md
 
 lint:
-		flake8 --exclude=.tox --max-line-length 120 --ignore=E722 $(SOURCE_PATH)
+		flake8 \
+		    --max-line-length 120 \
+		    --ignore=E722,W503 \
+		    $(SOURCE_PATH)
+		pylint \
+		    $(SOURCE_PATH)
 
 test:
 		pytest --verbose --color=yes -s \

@@ -1,6 +1,9 @@
 # ArgResolver v0.3.3
 
+[![PyPI version](https://badge.fury.io/py/argresolver.svg)](https://badge.fury.io/py/argresolver)
 [![Build Status](https://travis-ci.org/HazardDede/argresolver.svg?branch=master)](https://travis-ci.org/HazardDede/argresolver)
+[![Coverage Status](https://coveralls.io/repos/github/HazardDede/argresolver/badge.svg?branch=master)](https://coveralls.io/github/HazardDede/argresolver?branch=master)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Resolver is a simple decorator for resolving (missing) arguments at runtime.
 It performs various tasks from looking up arguments from the environment variable scope to simple service dependency injection.
